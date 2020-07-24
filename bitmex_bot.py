@@ -385,7 +385,7 @@ def balance_data(update, context):
     msg = f'''Wallet Update
 {now}
 
-{wallet_update(account)}'''
+{dict_str(wallet_update(account))}'''
     update.message.reply_text(msg)
 
 def open_position(update, context):
