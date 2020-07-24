@@ -206,7 +206,6 @@ botAPI = temp_bot[bot_account]['bot_token']
 
 def wallet_update(account):
     client = load_credentials(account);
-    now = datetime.strftime(datetime.utcnow(), '%m-%d-%Y %H:%M:%S')
 
     LASTPRICE = [x['lastPrice'] for x in requests.get('https://www.bitmex.com/api/v1/instrument/active').json() if x['symbol'] == 'XBTUSD'][0]
 
@@ -229,36 +228,14 @@ def wallet_update(account):
             'uPNL': btc_str(UPNL)+' | '+usd_str(UPNL*LASTPRICE),
             'uBalance': btc_str(UBALANCE)+' | '+usd_str(UBALANCE*LASTPRICE)}
 
-    msg = f'''Wallet Update
-{now}
-
-{dict_str(WALLETDICT)}'''
-    return msg
+    return WALLETDICT
 
 def current_open(account):
     client = load_credentials(account);
     now = datetime.strftime(datetime.utcnow(), '%m-%d-%Y %H:%M:%S')
     
-    LASTPRICE = [x['lastPrice'] for x in requests.get('https://www.bitmex.com/api/v1/instrument/active').json() if x['symbol'] == 'XBTUSD'][0]
-
-    ACCOUNT = account
-
-    CURRENT_WALLET = client.User.User_getWalletHistory().result()[0][0]
-
-    BALANCE = CURRENT_WALLET['walletBalance']/100000000
-
-    if 'UnrealisedPNL' in CURRENT_WALLET.values():
-        UPNL = CURRENT_WALLET['amount']/100000000
-    else:
-        UPNL = 0.00000000
-
-    UBALANCE = CURRENT_WALLET['marginBalance']/100000000
-
-    WALLETDICT = {'CurrentPrice': usd_str(LASTPRICE),
-            'Account': ACCOUNT,
-            'Balance': btc_str(BALANCE)+' | '+usd_str(BALANCE*LASTPRICE),
-            'uPNL': btc_str(UPNL)+' | '+usd_str(UPNL*LASTPRICE),
-            'uBalance': btc_str(UBALANCE)+' | '+usd_str(UBALANCE*LASTPRICE)}
+    WALLETDICT = wallet_update(account)
+    
     try:
         OPENPOSITION = client.Position.Position_get(filter=json.dumps({'isOpen': True, 'symbol': 'XBTUSD'})).result()[0][0]
     except IndexError:
@@ -404,7 +381,11 @@ def start(update, context):
 def balance_data(update, context):
     """Send a message when the command /balance is issued."""
     account = context.user_data['account']
-    msg = wallet_update(account)
+    now = datetime.strftime(datetime.utcnow(), '%m-%d-%Y %H:%M:%S')
+    msg = f'''Wallet Update
+{now}
+
+{wallet_update(account)}'''
     update.message.reply_text(msg)
 
 def open_position(update, context):
