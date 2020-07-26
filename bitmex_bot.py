@@ -214,19 +214,17 @@ def wallet_update(account):
     CURRENT_WALLET = client.User.User_getWalletHistory().result()[0][0]
 
     BALANCE = CURRENT_WALLET['walletBalance']/100000000
+    
+    WALLETDICT = {'CurrentPrice': usd_str(LASTPRICE),
+                  'Account': ACCOUNT,
+                  'Balance': btc_str(BALANCE)+' | '+usd_str(BALANCE*LASTPRICE)}
 
     if 'UnrealisedPNL' in CURRENT_WALLET.values():
         UPNL = CURRENT_WALLET['amount']/100000000
-    else:
-        UPNL = 0.00000000
-
-    UBALANCE = CURRENT_WALLET['marginBalance']/100000000
-
-    WALLETDICT = {'CurrentPrice': usd_str(LASTPRICE),
-            'Account': ACCOUNT,
-            'Balance': btc_str(BALANCE)+' | '+usd_str(BALANCE*LASTPRICE),
-            'uPNL': btc_str(UPNL)+' | '+usd_str(UPNL*LASTPRICE),
-            'uBalance': btc_str(UBALANCE)+' | '+usd_str(UBALANCE*LASTPRICE)}
+        UBALANCE = CURRENT_WALLET['marginBalance']/100000000
+        
+        WALLETDICT.update({'uPNL': btc_str(UPNL)+' | '+usd_str(UPNL*LASTPRICE),
+                           'uBalance': btc_str(UBALANCE)+' | '+usd_str(UBALANCE*LASTPRICE)})
 
     return WALLETDICT
 
