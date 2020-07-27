@@ -258,18 +258,21 @@ No Open Position
         OPENORDERS = client.Order.Order_getOrders(filter = json.dumps({'open': 'true', 'symbol': 'XBTUSD'})).result()[0]
         if len(OPENORDERS) == 0:
             OPENORDERS = None
-            STOPPRICE = 'No Stop Set'
-            CLOSEPRICE = 'No Close Set'
+            STOPPRICE = None
+            CLOSEPRICE = None
         else:
             STOPORDERS = [x for x in OPENORDERS if x['ordType'] == 'Stop']
             if len(STOPORDERS) != 0:
                 STOPPRICE = usd_str(STOPORDERS[0]['stopPx'])
             else:
-                STOPPRICE = 'No Stop Set'
+                STOPPRICE = usd_str(OPENPOSITION['liquidationPrice']) + '***LIQUIDATION PRICE***'
 
             CLOSEORDERS = [x for x in OPENORDERS if x['ordType'] != 'Stop' and x['side'] != SIDE]
             if len(CLOSEORDERS) != 0:
-                CLOSEPRICE = usd_str(CLOSEORDERS[0]['price'])
+                if SIDE == 'Buy':
+                    CLOSEPRICE = usd_str(min([x['price'] for x in CLOSEORDERS]))
+                else:
+                    CLOSEPRICE = usd_str(max([x['price'] for x in CLOSEORDERS])
             else:
                 CLOSEPRICE = 'No Close Set'
         WALLETDICT.update({'StopPrice': STOPPRICE,
