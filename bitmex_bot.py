@@ -263,16 +263,19 @@ No Open Position
         else:
             STOPORDERS = [x for x in OPENORDERS if x['ordType'] == 'Stop']
             if len(STOPORDERS) != 0:
-                STOPPRICE = usd_str(STOPORDERS[0]['stopPx'])
+                if SIDE == 'Buy':
+                    STOPPRICE = usd_str(max([x['stopPx'] for x in STOPORDERS if x['side'] != SIDE]))
+                else:
+                    STOPPRICE = usd_str(min([x['stopPx'] for x in STOPORDERS if x['side'] != SIDE]))
             else:
                 STOPPRICE = usd_str(OPENPOSITION['liquidationPrice']) + '***LIQUIDATION PRICE***'
 
             CLOSEORDERS = [x for x in OPENORDERS if x['ordType'] != 'Stop' and x['side'] != SIDE]
             if len(CLOSEORDERS) != 0:
                 if SIDE == 'Buy':
-                    CLOSEPRICE = usd_str(min([x['price'] for x in CLOSEORDERS]))
+                    CLOSEPRICE = usd_str(min([x['price'] for x in CLOSEORDERS if x['side'] != SIDE]))
                 else:
-                    CLOSEPRICE = usd_str(max([x['price'] for x in CLOSEORDERS]))
+                    CLOSEPRICE = usd_str(max([x['price'] for x in CLOSEORDERS if x['side'] != SIDE]))
             else:
                 CLOSEPRICE = 'No Close Set'
         WALLETDICT.update({'StopPrice': STOPPRICE,
